@@ -167,26 +167,26 @@ body {
   }
   
   .header-title {  
-    text-align: center;  
-    color: #080f30;  
-    font-size: 32px; /* Aumentei o tamanho do texto para destaque */  
-    font-weight: bold;  
-    margin: 20px 0; /* Espaçamento acima e abaixo do título */  
-    position: absolute; /* Coloca o título fora do fluxo normal para sobrepor */  
-    top: 20px; /* Ajuste essa distância conforme necessário */  
-    left: 50%; /* Centraliza horizontalmente */  
-    transform: translateX(-50%); /* Centraliza de forma precisa */  
-    z-index: 1000; /* Z-index alto para garantir que fique acima dos outros elementos */  
+    text-align: center;
+    color: #080f30;
+    font-size: 32px;
+    font-weight: bold;
+    margin: 20px 0;
+    position: absolute;
+    top: 39px;
+    left: 35%;
+    transform: translateX(-50%);
+    z-index: 1000;
 }  
 
 .header-logo {  
-  display: block; /* Certifique-se de que a imagem não cause efeitos de margem indesejados */  
-  margin: 0 auto; /* Centraliza a imagem */  
+  display: block; 
+  margin: 0 auto; 
 }  
 
   .div-azul::after {
     content: "";
-    position: relative; /* Certifique-se de que a imagem esteja em um contexto relativo */  
+    position: relative;
     top: -20px;
     right: -20px;
     width: 150px;
@@ -219,11 +219,12 @@ body {
   }
   
   .cadastre-se {
+    text-align: center;
     font-size: 20px;
-    font-weight: bold;
     color: #1DA1F2;
     margin-top: 0;
     margin-bottom: 20px;
+    font-weight: bold;
   }
   
   .text-field-entrar, .text-field-cadastrar {

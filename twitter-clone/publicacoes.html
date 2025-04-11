@@ -442,8 +442,8 @@
               return;
             }
 
-            const estaSeguindo = this.querySelector(".seguir").textContent === "deixar de seguir";
-
+            const estaSeguindo =
+              this.querySelector(".seguir").textContent === "deixar de seguir";
 
             if (estaSeguindo) {
               deixarDeSeguirUsuario(usuarioId);
@@ -758,6 +758,7 @@
             container.appendChild(formComentario);
           }
         }
+
         // Função para comentar em um tweet
         function comentarTweet(tweetId, conteudo, container) {
           fetch(`http://localhost:8000/api/tweets/${tweetId}/comments`, {
@@ -777,25 +778,48 @@
               }
               return response.json();
             })
-            .then((data) => {
+            .then((novoComentario) => {
               // Limpar campo de texto
-
               document.getElementById(`texto-comentario-${tweetId}`).value = "";
 
-              // Recarregar comentários
-              carregarComentarios(tweetId, container);
+              // Criar e adicionar o novo comentário diretamente ao DOM
+              const divComentario = document.createElement("div");
+              divComentario.className = "comentario-item";
 
+              const nomeComentario = document.createElement("p");
+              nomeComentario.className = "nome-perfil-comentario";
+              nomeComentario.textContent = userName || "Usuário"; // Usa o nome do usuário logado
+
+              // Adiciona o ID do usuário como atributo de dados
+              nomeComentario.setAttribute("data-user-id", userId);
+              nomeComentario.addEventListener("click", function (event) {
+                event.stopPropagation();
+                carregarInformacoesUsuario(userId);
+              });
+
+              const textoComentario = document.createElement("p");
+              textoComentario.className = "comentario";
+              textoComentario.textContent = conteudo;
+
+              divComentario.appendChild(nomeComentario);
+              divComentario.appendChild(textoComentario);
+
+              // Adiciona o novo comentário antes do formulário
+              const formComentario = container.querySelector(".w-form");
+              if (formComentario) {
+                container.insertBefore(divComentario, formComentario);
+              } else {
+                container.appendChild(divComentario);
+              }
+              
               // Atualizar estatísticas do usuário logado após comentar
               carregarEstatisticasUsuarioLogado();
             })
             .catch((error) => {
               console.error("Erro:", error);
-              alert(
-                "Não foi possível adicionar o comentário. Tente novamente mais tarde."
-              );
+              mostrarNotificacao("Erro ao adicionar comentário", "erro");
             });
         }
-
         // Função para seguir um usuário
         function seguirUsuario(usuarioId) {
           fetch(`http://localhost:8000/api/users/${usuarioId}/follow`, {
