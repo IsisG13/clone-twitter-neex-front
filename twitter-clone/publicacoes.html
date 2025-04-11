@@ -406,16 +406,23 @@
                 ? data
                 : data.data || data.following || [];
               const jaSeguindo = seguindo.some(
-                (follow) => follow.id == usuarioId
+                (follow) =>
+                  follow.id == usuarioId || follow.user_id == usuarioId
               );
 
-              const botaoSeguir = document.querySelector(
-                "#botao-seguir-usuario .seguir"
+              const botaoSeguir = document.getElementById(
+                "botao-seguir-usuario"
               );
               if (botaoSeguir) {
-                botaoSeguir.textContent = jaSeguindo
+                botaoSeguir.querySelector(".seguir").textContent = jaSeguindo
                   ? "deixar de seguir"
                   : "seguir";
+                // Adiciona uma classe para estilização quando já está seguindo
+                if (jaSeguindo) {
+                  botaoSeguir.classList.add("seguindo");
+                } else {
+                  botaoSeguir.classList.remove("seguindo");
+                }
               }
             })
             .catch((error) => {
@@ -428,15 +435,15 @@
           .getElementById("botao-seguir-usuario")
           .addEventListener("click", function (event) {
             event.preventDefault();
-            const usuarioId = this.dataset.userId;
+            const usuarioId = this.getAttribute("data-user-id");
 
             if (!usuarioId) {
               console.error("ID do usuário não encontrado");
               return;
             }
 
-            const estaSeguindo =
-              this.querySelector(".seguir").textContent === "deixar de seguir";
+            const estaSeguindo = this.querySelector(".seguir").textContent === "deixar de seguir";
+
 
             if (estaSeguindo) {
               deixarDeSeguirUsuario(usuarioId);
@@ -772,6 +779,7 @@
             })
             .then((data) => {
               // Limpar campo de texto
+
               document.getElementById(`texto-comentario-${tweetId}`).value = "";
 
               // Recarregar comentários
@@ -808,7 +816,15 @@
             })
             .then((data) => {
               mostrarNotificacao("Começou a seguir", "sucesso");
-              verificarSeguimento(usuarioId);
+              // Atualiza o botão imediatamente
+              const botaoSeguir = document.getElementById(
+                "botao-seguir-usuario"
+              );
+              if (botaoSeguir) {
+                botaoSeguir.querySelector(".seguir").textContent =
+                  "deixar de seguir";
+                botaoSeguir.classList.add("seguindo");
+              }
               carregarSeguidores(usuarioId);
               carregarEstatisticasUsuarioLogado();
             })
@@ -840,7 +856,14 @@
             })
             .then((data) => {
               mostrarNotificacao("Deixou de seguir", "sucesso");
-              verificarSeguimento(usuarioId);
+              // Atualiza o botão imediatamente
+              const botaoSeguir = document.getElementById(
+                "botao-seguir-usuario"
+              );
+              if (botaoSeguir) {
+                botaoSeguir.querySelector(".seguir").textContent = "seguir";
+                botaoSeguir.classList.remove("seguindo");
+              }
               carregarSeguidores(usuarioId);
               carregarEstatisticasUsuarioLogado();
             })

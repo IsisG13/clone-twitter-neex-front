@@ -73,6 +73,7 @@ body {
   }
   
   .w-clearfix:after {
+    margin-right: 5%;
     content: "";
     display: table;
     clear: both;
@@ -80,8 +81,32 @@ body {
   
   /* Estilos para a página de login/cadastro */
   .body {
-    background-color: #f7fafc;
+    background-color: container w-clearfix#f7fafc;
   }
+
+  .botao-seguir.seguindo {
+    background-color: white;
+    border: 1px solid #1DA1F2;
+  }
+  
+  .botao-seguir.seguindo .seguir {
+    color: #1DA1F2;
+  }
+
+  /* Adicione ao seu arquivo CSS */
+.botao-seguir.seguindo {
+  background-color: #e1e8ed;
+  border: 1px solid #ccd6dd;
+}
+
+.botao-seguir.seguindo .seguir {
+  color: #14171a;
+}
+
+.botao-seguir.seguindo:hover {
+  background-color: #e1e8ed;
+  border-color: #ccd6dd;
+}
 
   .large-logo {
     margin-top: -13%;
@@ -90,44 +115,78 @@ body {
   }
   
   .topo {
+    margin: 0;
     width: 100%;
-    padding: 40px 0;
+    padding: 0;
   }
   
   .container {
-    float: right;
+    display: grid;
+    grid-template-columns: 95% 85%;
     max-width: 1000px;
-    margin: 0 auto;
+    /* margin: 0 0 0 60%; */
     padding: 0 20px;
   }
+
+  .w-form-done, .w-form-fail {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    display: none; /* Inicialmente escondido */
+  }
   
-  .div-azul {
-    background-color: #1DA1F2;
-    height: 120px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: 0 4px 6px rgba(29, 161, 242, 0.2);
+  .w-form-done {
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+  }
+  
+  .w-form-fail {
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
+  }
+  
+    .div-azul {
+      margin: -40px;
+      padding: 0;
+      background-color: #1DA1F2;
+      height: 104vh;
+      width: 103%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 4px 6px rgba(29, 161, 242, 0.2);
   }
 
   .header-logo {
-    width: 60px;
-    height: 60px;
+    width: 94%;
+    height: 100vh;
     margin-right: 20px;
   }
   
-  .header-title {
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-  }
-  
+  .header-title {  
+    text-align: center;  
+    color: #080f30;  
+    font-size: 32px; /* Aumentei o tamanho do texto para destaque */  
+    font-weight: bold;  
+    margin: 20px 0; /* Espaçamento acima e abaixo do título */  
+    position: absolute; /* Coloca o título fora do fluxo normal para sobrepor */  
+    top: 20px; /* Ajuste essa distância conforme necessário */  
+    left: 50%; /* Centraliza horizontalmente */  
+    transform: translateX(-50%); /* Centraliza de forma precisa */  
+    z-index: 1000; /* Z-index alto para garantir que fique acima dos outros elementos */  
+}  
+
+.header-logo {  
+  display: block; /* Certifique-se de que a imagem não cause efeitos de margem indesejados */  
+  margin: 0 auto; /* Centraliza a imagem */  
+}  
+
   .div-azul::after {
     content: "";
-    position: absolute;
+    position: relative; /* Certifique-se de que a imagem esteja em um contexto relativo */  
     top: -20px;
     right: -20px;
     width: 150px;
@@ -137,6 +196,8 @@ body {
   }
   
   .div-formulario {
+    z-index: 999; /* Certifique-se que fique abaixo do título, se estiver utilizando z-index */  
+    margin-top: 10%;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;

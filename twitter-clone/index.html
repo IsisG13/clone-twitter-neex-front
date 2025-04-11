@@ -19,8 +19,38 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+
+    <style>
+      /* Estilos adicionais para as mensagens */
+      .w-form-done,
+      .w-form-fail {
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        text-align: center;
+        display: none;
+      }
+
+      .w-form-done {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .w-form-fail {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .mensagem-sucesso {
+        font-weight: bold;
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body class="body">
+    <h1 class="header-title">Neex Brasil - Twitter Clone</h1>
     <div class="topo">
       <div class="container w-clearfix">
         <div class="div-azul">
@@ -29,7 +59,6 @@
             alt="Twitter Clone Logo"
             class="header-logo"
           />
-          <h1 class="header-title">Neex Brasil - Twitter Clone</h1>
         </div>
         <div class="div-formulario">
           <div class="div-entrar">
@@ -130,13 +159,18 @@
                   data-wait="Aguarde..."
                   class="botao-cadastrar w-button"
                 />
+
+                <!-- Mensagens de status do cadastro -->
+                <div class="w-form-done">
+                  <div class="mensagem-sucesso">
+                    Cadastro realizado com sucesso!<br />
+                    Faça login para acessar o Twitter Clone.
+                  </div>
+                </div>
+                <div class="w-form-fail">
+                  <div>Ocorreu um erro no cadastro. Tente novamente.</div>
+                </div>
               </form>
-              <div class="w-form-done">
-                <div>Cadastro realizado com sucesso!</div>
-              </div>
-              <div class="w-form-fail">
-                <div>Ocorreu um erro no cadastro. Tente novamente.</div>
-              </div>
             </div>
           </div>
         </div>
@@ -145,7 +179,6 @@
 
     <!-- Scripts -->
     <script>
-      // Script para página de login/cadastro
       document.addEventListener("DOMContentLoaded", function () {
         // Verificar se já está logado
         const token = localStorage.getItem("auth_token");
@@ -196,12 +229,19 @@
               })
               .catch((error) => {
                 console.error("Erro:", error);
-                alert("Erro ao fazer login. Verifique suas credenciais.");
+                // Mostrar mensagem de erro
+                const errorMessage = loginForm.querySelector(".w-form-fail");
+                if (errorMessage) {
+                  errorMessage.style.display = "block";
+                  setTimeout(() => {
+                    errorMessage.style.display = "none";
+                  }, 3000);
+                }
               });
           });
         }
 
-        // Formulário de cadastro
+        // Formulário de cadastro - Versão melhorada
         const registerForm = document.getElementById("register-form");
         if (registerForm) {
           registerForm.addEventListener("submit", function (event) {
@@ -214,15 +254,19 @@
               "register-confirm-password"
             ).value;
 
+            // Validações
             if (!name || !email || !password || !confirmPassword) {
-              alert("Por favor, preencha todos os campos.");
+              showRegisterError("Por favor, preencha todos os campos.");
               return;
             }
 
             if (password !== confirmPassword) {
-              alert("As senhas não coincidem.");
+              showRegisterError("As senhas não coincidem.");
               return;
             }
+
+            // Limpar mensagens anteriores
+            hideRegisterMessages();
 
             fetch("http://localhost:8000/api/register", {
               method: "POST",
@@ -239,24 +283,72 @@
             })
               .then((response) => {
                 if (!response.ok) {
-                  throw new Error("Falha no cadastro");
+                  return response.json().then((err) => {
+                    let errorMsg = "Erro no cadastro";
+                    if (err.errors) {
+                      if (err.errors.email) {
+                        errorMsg = err.errors.email[0];
+                      } else if (err.errors.password) {
+                        errorMsg = err.errors.password[0];
+                      }
+                    }
+                    throw new Error(errorMsg);
+                  });
                 }
                 return response.json();
               })
               .then((data) => {
-                // Salvar token no localStorage
-                localStorage.setItem("auth_token", data.token);
-                localStorage.setItem("user_id", data.user.id);
-                localStorage.setItem("user_name", data.user.name);
+                // Mostrar mensagem de sucesso
+                showRegisterSuccess();
 
-                // Redirecionar para a página de publicações
-                window.location.href = "publicacoes.html";
+                // Limpar o formulário
+                registerForm.reset();
+
+                // Rolagem para o topo para mostrar a mensagem
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
               })
               .catch((error) => {
                 console.error("Erro:", error);
-                alert("Erro ao fazer cadastro. Verifique os dados informados.");
+                showRegisterError(
+                  error.message || "Erro ao fazer cadastro. Tente novamente."
+                );
               });
           });
+        }
+
+        // Funções auxiliares para o formulário de registro
+        function hideRegisterMessages() {
+          const successMsg = registerForm.querySelector(".w-form-done");
+          const errorMsg = registerForm.querySelector(".w-form-fail");
+
+          if (successMsg) successMsg.style.display = "none";
+          if (errorMsg) errorMsg.style.display = "none";
+        }
+
+        function showRegisterSuccess() {
+          const successMsg = registerForm.querySelector(".w-form-done");
+          if (successMsg) {
+            successMsg.style.display = "block";
+            // Esconder após 5 segundos
+            setTimeout(() => {
+              successMsg.style.display = "none";
+            }, 5000);
+          }
+        }
+
+        function showRegisterError(message) {
+          const errorMsg = registerForm.querySelector(".w-form-fail");
+          if (errorMsg) {
+            errorMsg.querySelector("div").textContent = message;
+            errorMsg.style.display = "block";
+            // Esconder após 5 segundos
+            setTimeout(() => {
+              errorMsg.style.display = "none";
+            }, 5000);
+          }
         }
       });
     </script>
