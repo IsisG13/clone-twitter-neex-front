@@ -163,22 +163,22 @@ function exibirTweets(tweets) {
   const containerFeed = document.getElementById("container-feed");
   if (!containerFeed) return;
 
-  // Limpar conteúdo atual
   containerFeed.innerHTML = "";
 
-  // Criar elemento para cada tweet
   tweets.forEach((tweet) => {
     const divTweet = document.createElement("div");
     divTweet.className = "div-publicacao-feed";
-    divTweet.setAttribute("data-user-id", tweet.user.id);
-
-    // Nome do autor
+    
+    // Nome do autor (agora como link clicável)
     const nomeAutor = document.createElement("p");
     nomeAutor.className = "nome-autor";
     nomeAutor.textContent = tweet.user.name;
-    
-    // Adicionamos o ID do usuário como atributo no nome do autor
-    nomeAutor.setAttribute("data-user-id", tweet.user.id);
+    nomeAutor.style.cursor = "pointer";
+    nomeAutor.dataset.userId = tweet.user.id; // Usando dataset para armazenar o ID
+
+    nomeAutor.addEventListener("click", function() {
+      carregarPerfilUsuario(this.dataset.userId);
+    });
 
     // Conteúdo do tweet
     const textoTweet = document.createElement("p");
@@ -207,6 +207,7 @@ function exibirTweets(tweets) {
           carregarInformacoesUsuario(autorId);
         }
       }
+      containerFeed.appendChild(divTweet);
     });
 
     // Container para comentários
@@ -255,37 +256,54 @@ function exibirTweets(tweets) {
   });
 }
 
-  // Função para carregar o perfil de um usuário
-  function carregarPerfilUsuario(usuarioId) {
-    // Carregar os dados do usuário
-    fetch(`http://localhost:8000/api/users/${usuarioId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Erro ao carregar perfil do usuário: " + response.status);
-        }
-        return response.json();
-      })
-      .then((usuario) => {
-        atualizarPerfilSelecionado(usuario);
-        
-        // Carregar contagem de seguidores
-        carregarSeguidores(usuarioId);
-        
-        // Carregar contagem de seguindo
-        carregarSeguindo(usuarioId);
-        
-        // Verificar se o usuário atual já segue este usuário
-        verificarSeguimento(usuarioId);
-      })
-      .catch((error) => {
-        console.error("Erro ao carregar perfil do usuário:", error);
-      });
+ // Função para carregar o perfil de um usuário
+function carregarPerfilUsuario(usuarioId) {
+  if (!usuarioId) {
+    console.error("ID do usuário não fornecido");
+    return;
   }
+
+  fetch(`http://localhost:8000/api/users/${usuarioId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Erro ao carregar perfil");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      const usuario = data.user || data;
+      
+      // Atualizar nome do perfil
+      const perfilNome = document.getElementById("perfil-selecionado-nome");
+      if (perfilNome) {
+        perfilNome.textContent = usuario.name;
+      }
+
+      // Configurar botão de seguir
+      const botaoSeguir = document.getElementById("botao-seguir-usuario");
+      if (botaoSeguir) {
+        botaoSeguir.dataset.userId = usuario.id;
+      }
+
+      // Carregar seguidores e seguindo
+      carregarSeguidores(usuario.id);
+      carregarSeguindo(usuario.id);
+      
+      // Verificar se já está seguindo
+      verificarSeguimento(usuario.id);
+      
+      // Mostrar a seção
+      document.getElementById("perfil-selecionado").style.display = "block";
+    })
+    .catch((error) => {
+      console.error("Erro ao carregar perfil:", error);
+    });
+}
 
   // Função para atualizar o perfil selecionado na interface
   function atualizarPerfilSelecionado(usuario) {

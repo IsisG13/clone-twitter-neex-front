@@ -369,46 +369,41 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error(
-                  "Erro ao verificar seguimento: " + response.status
-                );
+                throw new Error("Erro ao verificar seguimento");
               }
               return response.json();
             })
             .then((data) => {
-              // Verificar estrutura dos dados
-              const seguindo = Array.isArray(data) ? data : data.data || [];
-
-              // Verificar se o perfil atual está na lista de seguidos
+              const seguindo = Array.isArray(data)
+                ? data
+                : data.data || data.following || [];
               const jaSeguindo = seguindo.some(
                 (follow) => follow.id == usuarioId
               );
 
-              // Atualizar texto do botão
-              const botaoSeguirUsuario = document.getElementById(
-                "botao-seguir-usuario"
+              const botaoSeguir = document.querySelector(
+                "#botao-seguir-usuario .seguir"
               );
-              if (botaoSeguirUsuario) {
-                botaoSeguirUsuario.querySelector(".seguir").textContent =
-                  jaSeguindo ? "deixar de seguir" : "seguir";
+              if (botaoSeguir) {
+                botaoSeguir.textContent = jaSeguindo
+                  ? "deixar de seguir"
+                  : "seguir";
               }
+            })
+            .catch((error) => {
+              console.error("Erro ao verificar seguimento:", error);
             });
-          alert("Seguir").catch((error) => {
-            console.error("Erro ao verificar seguimento:", error);
-          });
         }
-
-        // Evento para o botão seguir/deixar de seguir do perfil selecionado
-        const botaoSeguirUsuario = document.getElementById(
-          "botao-seguir-usuario"
-        );
-        if (botaoSeguirUsuario) {
-          botaoSeguirUsuario.addEventListener("click", function (event) {
+        
+        // Evento para o botão seguir/deixar de seguir
+        document
+          .getElementById("botao-seguir-usuario")
+          .addEventListener("click", function (event) {
             event.preventDefault();
+            const usuarioId = this.dataset.userId;
 
-            const usuarioId = this.getAttribute("data-user-id");
             if (!usuarioId) {
-              alert("Usuário não identificado");
+              console.error("ID do usuário não encontrado");
               return;
             }
 
@@ -421,7 +416,6 @@
               seguirUsuario(usuarioId);
             }
           });
-        }
 
         // Função para carregar o feed de tweets
         function carregarFeed() {
@@ -518,22 +512,76 @@
           const containerFeed = document.getElementById("container-feed");
           if (!containerFeed) return;
 
-          // Limpar conteúdo atual
           containerFeed.innerHTML = "";
 
-          // Criar elemento para cada tweet
           tweets.forEach((tweet) => {
             const divTweet = document.createElement("div");
             divTweet.className = "div-publicacao-feed";
-            divTweet.setAttribute("data-user-id", tweet.user.id);
 
-            // Nome do autor
+            // Nome do autor (agora como link clicável)
             const nomeAutor = document.createElement("p");
             nomeAutor.className = "nome-autor";
             nomeAutor.textContent = tweet.user.name;
+            nomeAutor.style.cursor = "pointer";
+            nomeAutor.dataset.userId = tweet.user.id; // Usando dataset para armazenar o ID
 
-            // Adicionamos o ID do usuário como atributo no nome do autor
-            nomeAutor.setAttribute("data-user-id", tweet.user.id);
+            nomeAutor.addEventListener("click", function () {
+              carregarPerfilUsuario(this.dataset.userId);
+            });
+
+            // Função para carregar o perfil de um usuário
+            function carregarPerfilUsuario(usuarioId) {
+              if (!usuarioId) {
+                console.error("ID do usuário não fornecido");
+                return;
+              }
+
+              fetch(`http://localhost:8000/api/users/${usuarioId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  Accept: "application/json",
+                },
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Erro ao carregar perfil");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  const usuario = data.user || data;
+
+                  // Atualizar nome do perfil
+                  const perfilNome = document.getElementById(
+                    "perfil-selecionado-nome"
+                  );
+                  if (perfilNome) {
+                    perfilNome.textContent = usuario.name;
+                  }
+
+                  // Configurar botão de seguir
+                  const botaoSeguir = document.getElementById(
+                    "botao-seguir-usuario"
+                  );
+                  if (botaoSeguir) {
+                    botaoSeguir.dataset.userId = usuario.id;
+                  }
+
+                  // Carregar seguidores e seguindo
+                  carregarSeguidores(usuario.id);
+                  carregarSeguindo(usuario.id);
+
+                  // Verificar se já está seguindo
+                  verificarSeguimento(usuario.id);
+
+                  // Mostrar a seção
+                  document.getElementById("perfil-selecionado").style.display =
+                    "block";
+                })
+                .catch((error) => {
+                  console.error("Erro ao carregar perfil:", error);
+                });
+            }
 
             // Conteúdo do tweet
             const textoTweet = document.createElement("p");
@@ -543,26 +591,6 @@
             // Adicionar elementos ao tweet
             divTweet.appendChild(nomeAutor);
             divTweet.appendChild(textoTweet);
-
-            // Melhorando o tratamento de clique para capturar corretamente o ID do usuário
-            nomeAutor.addEventListener("click", function (event) {
-              event.stopPropagation(); // Impedir propagação
-              const autorId = this.getAttribute("data-user-id");
-              if (autorId) {
-                carregarInformacoesUsuario(autorId);
-              }
-            });
-
-            // Também permitir clicar no tweet para ver o perfil do autor
-            divTweet.addEventListener("click", function (event) {
-              // Verificar se o clique não foi em um elemento filho que tem seu próprio tratador
-              if (event.target === this || event.target === textoTweet) {
-                const autorId = this.getAttribute("data-user-id");
-                if (autorId) {
-                  carregarInformacoesUsuario(autorId);
-                }
-              }
-            });
 
             // Container para comentários
             const divComentarios = document.createElement("div");
@@ -744,29 +772,20 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao seguir usuário: " + response.status);
+                throw new Error("Erro ao seguir usuário");
               }
               return response.json();
             })
-            .then((data) => {
-              // Atualiza o estado do botão
+            .then(() => {
+              // Atualizar o estado do botão
               verificarSeguimento(usuarioId);
-
-              // Recarregar os contadores do perfil selecionado
+              // Atualizar contadores
               carregarSeguidores(usuarioId);
-              carregarSeguindo(usuarioId);
-
-              // Atualizar estatísticas do usuário logado
               carregarEstatisticasUsuarioLogado();
-
-              // Atualiza o feed para possíveis atualizações
-              carregarFeed();
             })
             .catch((error) => {
               console.error("Erro:", error);
-              alert(
-                "Não foi possível seguir este usuário. Tente novamente mais tarde."
-              );
+              alert("Não foi possível seguir este usuário");
             });
         }
 
@@ -782,31 +801,20 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error(
-                  "Erro ao deixar de seguir usuário: " + response.status
-                );
+                throw new Error("Erro ao deixar de seguir");
               }
               return response.json();
             })
-            .then((data) => {
-              // Atualiza o estado do botão
+            .then(() => {
+              // Atualizar o estado do botão
               verificarSeguimento(usuarioId);
-
-              // Recarregar os contadores do perfil selecionado
+              // Atualizar contadores
               carregarSeguidores(usuarioId);
-              carregarSeguindo(usuarioId);
-
-              // Atualizar estatísticas do usuário logado
               carregarEstatisticasUsuarioLogado();
-
-              // Atualiza o feed para possíveis atualizações
-              carregarFeed();
             })
             .catch((error) => {
               console.error("Erro:", error);
-              alert(
-                "Não foi possível deixar de seguir este usuário. Tente novamente mais tarde."
-              );
+              alert("Não foi possível deixar de seguir");
             });
         }
       });
