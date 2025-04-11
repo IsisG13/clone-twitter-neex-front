@@ -13,96 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // Função para atualizar o perfil do usuário exibido
-  function atualizarPerfilUsuario(usuario) {
-    const nomePerfil = document.querySelector(".nome-perfil");
-    const botaoSeguir = document.querySelector(".botao-seguir");
-
-    if (nomePerfil) {
-      nomePerfil.textContent = usuario.name;
-    }
-
-    if (botaoSeguir) {
-      botaoSeguir.setAttribute("data-user-id", usuario.id);
-    }
-  }
-
-  // Função para verificar se o usuário atual já segue outro usuário
-  function verificarSeguimento(perfilId) {
-    fetch(`http://localhost:8000/api/users/${userId}/following`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Erro ao verificar seguimento: " + response.status);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // Verificar estrutura dos dados
-        const seguindo = Array.isArray(data) ? data : data.data || [];
-
-        // Verificar se o perfil atual está na lista de seguidos
-        const jaSeguindo = seguindo.some((follow) => follow.id == perfilId);
-
-        // Atualizar texto do botão
-        const botaoSeguir = document.querySelector(".botao-seguir");
-        if (botaoSeguir) {
-          botaoSeguir.querySelector(".seguir").textContent = jaSeguindo
-            ? "deixar de seguir"
-            : "seguir";
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao verificar seguimento:", error);
-      });
-  }
-
-  // Função para carregar lista de usuários
-  function carregarUsuarios() {
-    fetch("http://localhost:8000/api/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Erro ao carregar usuários: " + response.status);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const usuarios = Array.isArray(data) ? data : data.data || [];
-        const usuariosFiltrados = usuarios.filter((user) => user.id != userId);
-  
-        if (usuariosFiltrados.length > 0) {
-          const usuarioSelecionado = usuariosFiltrados[0];
-          
-          // Atualizar o perfil exibido
-          const nomePerfil = document.querySelector(".nome-perfil");
-          const botaoSeguir = document.querySelector(".botao-seguir");
-          
-          if (nomePerfil) {
-            nomePerfil.textContent = usuarioSelecionado.name;
-          }
-          
-          if (botaoSeguir) {
-            // Aqui está a correção principal - definir o data-user-id corretamente
-            botaoSeguir.setAttribute("data-user-id", usuarioSelecionado.id);
-            console.log("ID do usuário a ser seguido:", usuarioSelecionado.id);
-          }
-  
-          verificarSeguimento(usuarioSelecionado.id);
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao carregar usuários:", error);
-      });
-  }
   // Exibir nome do usuário logado
   const nomePerfil = document.querySelector(".nome-perfil");
   if (nomePerfil) {
@@ -154,6 +64,11 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch((error) => {
           console.error("Erro ao fazer logout:", error);
+          // Em caso de erro, ainda assim limpa o localStorage e redireciona
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user_id");
+          localStorage.removeItem("user_name");
+          window.location.href = "index.html";
         });
     });
   }
@@ -196,6 +111,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Função para publicar um novo tweet
   function publicarTweet(conteudo) {
+    const mensagemSucesso = document.getElementById("mensagem-sucesso");
+    const mensagemErro = document.getElementById("mensagem-erro");
+
+    // Esconde as mensagens
+    mensagemSucesso.style.display = "none";
+    mensagemErro.style.display = "none";
+
     fetch("http://localhost:8000/api/tweets", {
       method: "POST",
       headers: {
@@ -209,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Erro ao publicar");
+          throw new Error("Erro ao publicar: " + response.status);
         }
         return response.json();
       })
@@ -217,17 +139,27 @@ document.addEventListener("DOMContentLoaded", function () {
         // Limpar campo de texto
         document.getElementById("texto-publicacao").value = "";
 
-        // Recarregar feed
+        // Mostrar mensagem de sucesso
+        mensagemSucesso.style.display = "block";
+        setTimeout(() => {
+          mensagemSucesso.style.display = "none";
+        }, 3000);
+
+        // Recarregar feed para mostrar o novo tweet
         carregarFeed();
       })
       .catch((error) => {
         console.error("Erro:", error);
-        alert("Não foi possível publicar. Tente novamente mais tarde.");
+        // Mostrar mensagem de erro
+        mensagemErro.style.display = "block";
+        setTimeout(() => {
+          mensagemErro.style.display = "none";
+        }, 3000);
       });
   }
 
-// Função para exibir os tweets no feed
-function exibirTweets(tweets) {
+  // Função para exibir os tweets no feed
+  function exibirTweets(tweets) {
     const containerFeed = document.getElementById("container-feed");
     if (!containerFeed) return;
 
@@ -236,67 +168,306 @@ function exibirTweets(tweets) {
 
     // Criar elemento para cada tweet
     tweets.forEach((tweet) => {
-        const divTweet = document.createElement("div");
-        divTweet.className = "div-publicacao-feed";
+      const divTweet = document.createElement("div");
+      divTweet.className = "div-publicacao-feed";
+      divTweet.setAttribute("data-user-id", tweet.user.id);
 
-        // Nome do autor
-        const nomeAutor = document.createElement("p");
-        nomeAutor.className = "nome-autor";
-        nomeAutor.textContent = tweet.user.name;
+      // Nome do autor
+      const nomeAutor = document.createElement("p");
+      nomeAutor.className = "nome-autor";
+      nomeAutor.textContent = tweet.user.name;
 
-        // Conteúdo do tweet
-        const textoTweet = document.createElement("p");
-        textoTweet.className = "texto-publicacao";
-        textoTweet.textContent = tweet.content;
+      // Conteúdo do tweet
+      const textoTweet = document.createElement("p");
+      textoTweet.className = "texto-publicacao";
+      textoTweet.textContent = tweet.content;
 
-        // Container para comentários
-        const divComentarios = document.createElement("div");
-        divComentarios.className = "div-comentario-existente";
-
-        // Adicionar elementos ao tweet
-        divTweet.appendChild(nomeAutor);
-        divTweet.appendChild(textoTweet);
-
-        // Carregar e exibir comentários (se necessário)
-        if (tweet.comments && tweet.comments.length > 0) {
-            exibirComentarios(tweet.comments, divComentarios);
+      // Adicionar evento de clique ao tweet para mostrar o perfil do usuário
+      divTweet.addEventListener("click", function(event) {
+        // Prevenir a propagação do clique para não interferir com os comentários
+        if (event.target === divTweet || 
+            event.target === nomeAutor || 
+            event.target === textoTweet) {
+          carregarPerfilUsuario(tweet.user.id);
         }
+      });
 
-        // Formulário para adicionar comentário
-        const formComentario = document.createElement("div");
-        formComentario.className = "w-form";
-        formComentario.innerHTML = `
-            <form id="form-comentario-${tweet.id}" class="w-clearfix">
-                <textarea placeholder="..." maxlength="5000" id="texto-comentario-${tweet.id}" class="textarea w-input"></textarea>
-                <input type="submit" value="Comentar" data-wait="Aguarde..." class="submit-button w-button">
-            </form>
-        `;
+      // Container para comentários
+      const divComentarios = document.createElement("div");
+      divComentarios.className = "div-comentario-existente";
 
-        // Adicionar event listener para o formulário de comentário
-        formComentario
-            .querySelector(`#form-comentario-${tweet.id}`)
-            .addEventListener("submit", function (event) {
-                event.preventDefault();
+      // Adicionar elementos ao tweet
+      divTweet.appendChild(nomeAutor);
+      divTweet.appendChild(textoTweet);
 
-                const textoComentario = document.getElementById(
-                    `texto-comentario-${tweet.id}`
-                ).value;
+      // Carregar e exibir comentários (se necessário)
+      if (tweet.comments && tweet.comments.length > 0) {
+        exibirComentarios(tweet.comments, divComentarios);
+      }
 
-                if (!textoComentario.trim()) {
-                    alert("Por favor, escreva algo para comentar.");
-                    return;
-                }
+      // Formulário para adicionar comentário
+      const formComentario = document.createElement("div");
+      formComentario.className = "w-form";
+      formComentario.innerHTML = `
+        <form id="form-comentario-${tweet.id}" class="w-clearfix">
+          <textarea placeholder="..." maxlength="5000" id="texto-comentario-${tweet.id}" class="textarea w-input"></textarea>
+          <input type="submit" value="Comentar" data-wait="Aguarde..." class="submit-button w-button">
+        </form>
+      `;
 
-                comentarTweet(tweet.id, textoComentario, divComentarios);
-            });
+      // Adicionar event listener para o formulário de comentário
+      formComentario
+        .querySelector(`#form-comentario-${tweet.id}`)
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
 
-        divComentarios.appendChild(formComentario);
-        divTweet.appendChild(divComentarios);
+          const textoComentario = document.getElementById(
+            `texto-comentario-${tweet.id}`
+          ).value;
 
-        // Adicionar tweet ao container
-        containerFeed.appendChild(divTweet);
+          if (!textoComentario.trim()) {
+            alert("Por favor, escreva algo para comentar.");
+            return;
+          }
+
+          comentarTweet(tweet.id, textoComentario, divComentarios);
+        });
+
+      divComentarios.appendChild(formComentario);
+      divTweet.appendChild(divComentarios);
+
+      // Adicionar tweet ao container
+      containerFeed.appendChild(divTweet);
     });
-}
+  }
+
+  // Função para carregar o perfil de um usuário
+  function carregarPerfilUsuario(usuarioId) {
+    // Carregar os dados do usuário
+    fetch(`http://localhost:8000/api/users/${usuarioId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao carregar perfil do usuário: " + response.status);
+        }
+        return response.json();
+      })
+      .then((usuario) => {
+        atualizarPerfilSelecionado(usuario);
+        
+        // Carregar contagem de seguidores
+        carregarSeguidores(usuarioId);
+        
+        // Carregar contagem de seguindo
+        carregarSeguindo(usuarioId);
+        
+        // Verificar se o usuário atual já segue este usuário
+        verificarSeguimento(usuarioId);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar perfil do usuário:", error);
+      });
+  }
+
+  // Função para atualizar o perfil selecionado na interface
+  function atualizarPerfilSelecionado(usuario) {
+    const perfilSelecionado = document.getElementById("perfil-selecionado");
+    const perfilNome = document.getElementById("perfil-selecionado-nome");
+    const botaoSeguirUsuario = document.getElementById("botao-seguir-usuario");
+
+    if (perfilSelecionado && perfilNome && botaoSeguirUsuario) {
+      // Atualiza as informações do perfil selecionado
+      perfilNome.textContent = usuario.name;
+      botaoSeguirUsuario.setAttribute("data-user-id", usuario.id);
+      
+      // Mostra a seção do perfil selecionado
+      perfilSelecionado.style.display = "block";
+    }
+  }
+
+  // Função para carregar a contagem de seguidores
+  function carregarSeguidores(usuarioId) {
+    fetch(`http://localhost:8000/api/users/${usuarioId}/followers`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao carregar seguidores: " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Atualizar o contador de seguidores na interface
+        const seguidoresCount = Array.isArray(data) ? data.length : (data.data ? data.data.length : 0);
+        const seguidoresElement = document.getElementById("seguidores-count");
+        if (seguidoresElement) {
+          seguidoresElement.textContent = seguidoresCount;
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar seguidores:", error);
+      });
+  }
+
+  // Função para carregar a contagem de seguindo
+  function carregarSeguindo(usuarioId) {
+    fetch(`http://localhost:8000/api/users/${usuarioId}/following`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao carregar seguindo: " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Atualizar o contador de seguindo na interface
+        const seguindoCount = Array.isArray(data) ? data.length : (data.data ? data.data.length : 0);
+        const seguindoElement = document.getElementById("seguindo-count");
+        if (seguindoElement) {
+          seguindoElement.textContent = seguindoCount;
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar seguindo:", error);
+      });
+  }
+
+  // Função para verificar se o usuário atual já segue outro usuário
+  function verificarSeguimento(usuarioId) {
+    fetch(`http://localhost:8000/api/users/${userId}/following`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao verificar seguimento: " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Verificar estrutura dos dados
+        const seguindo = Array.isArray(data) ? data : data.data || [];
+
+        // Verificar se o perfil atual está na lista de seguidos
+        const jaSeguindo = seguindo.some(
+          (follow) => follow.id == usuarioId
+        );
+
+        // Atualizar texto do botão
+        const botaoSeguirUsuario = document.getElementById("botao-seguir-usuario");
+        if (botaoSeguirUsuario) {
+          botaoSeguirUsuario.querySelector(".seguir").textContent = jaSeguindo
+            ? "deixar de seguir"
+            : "seguir";
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao verificar seguimento:", error);
+      });
+  }
+
+  // Evento para o botão seguir/deixar de seguir do perfil selecionado
+  const botaoSeguirUsuario = document.getElementById("botao-seguir-usuario");
+  if (botaoSeguirUsuario) {
+    botaoSeguirUsuario.addEventListener("click", function(event) {
+      event.preventDefault();
+      
+      const usuarioId = this.getAttribute("data-user-id");
+      if (!usuarioId) {
+        alert("Usuário não identificado");
+        return;
+      }
+
+      const estaSeguindo = this.querySelector(".seguir").textContent === "deixar de seguir";
+      
+      if (estaSeguindo) {
+        deixarDeSeguirUsuario(usuarioId);
+      } else {
+        seguirUsuario(usuarioId);
+      }
+    });
+  }
+
+  // Função para seguir um usuário
+  function seguirUsuario(usuarioId) {
+    fetch(`http://localhost:8000/api/users/${usuarioId}/follow`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao seguir usuário: " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Atualiza o estado do botão
+        verificarSeguimento(usuarioId);
+        
+        // Recarrega as contagens de seguidores
+        carregarSeguidores(usuarioId);
+        
+        // Recarrega o feed para possíveis atualizações
+        carregarFeed();
+      })
+      .catch((error) => {
+        console.error("Erro:", error);
+        alert(
+          "Não foi possível seguir este usuário. Tente novamente mais tarde."
+        );
+      });
+  }
+
+  // Função para deixar de seguir um usuário
+  function deixarDeSeguirUsuario(usuarioId) {
+    fetch(`http://localhost:8000/api/users/${usuarioId}/unfollow`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao deixar de seguir usuário: " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Atualiza o estado do botão
+        verificarSeguimento(usuarioId);
+        
+        // Recarrega as contagens de seguidores
+        carregarSeguidores(usuarioId);
+        
+        // Recarrega o feed para possíveis atualizações
+        carregarFeed();
+      })
+      .catch((error) => {
+        console.error("Erro:", error);
+        alert(
+          "Não foi possível deixar de seguir este usuário. Tente novamente mais tarde."
+        );
+      });
+  }
 
   // Função para carregar comentários de um tweet
   function carregarComentarios(tweetId, container) {
@@ -343,11 +514,11 @@ function exibirTweets(tweets) {
 
       const nomeComentario = document.createElement("p");
       nomeComentario.className = "nome-perfil-comentario";
-      nomeComentario.textContent = comentario.user.name;
+      nomeComentario.textContent = comentario.user?.name || "Usuário";
 
       const textoComentario = document.createElement("p");
       textoComentario.className = "comentario";
-      textoComentario.textContent = comentario.content;
+      textoComentario.textContent = comentario.content || comentario.text || comentario.body || "Sem conteúdo";
 
       divComentario.appendChild(nomeComentario);
       divComentario.appendChild(textoComentario);
@@ -391,93 +562,6 @@ function exibirTweets(tweets) {
         console.error("Erro:", error);
         alert(
           "Não foi possível adicionar o comentário. Tente novamente mais tarde."
-        );
-      });
-  }
-
-  // Adicionar evento para seguir usuário
-  const botaoSeguir = document.querySelector(".botao-seguir");
-  if (botaoSeguir) {
-    botaoSeguir.addEventListener("click", function (event) {
-      event.preventDefault();
-
-      // Aqui você precisaria obter o ID do usuário que está sendo visualizado
-      // Como exemplo, vamos supor que está na URL ou em algum atributo data-*
-      const perfilId = this.getAttribute("data-user-id");
-
-      if (!perfilId) {
-        alert("Usuário não identificado");
-        return;
-      }
-
-      const textoBotao = this.querySelector(".seguir").textContent;
-
-      if (textoBotao === "seguir") {
-        // Seguir usuário
-        seguirUsuario(perfilId);
-      } else {
-        // Deixar de seguir
-        deixarDeSeguirUsuario(perfilId);
-      }
-    });
-  }
-
-  // Função para seguir um usuário
-  function seguirUsuario(userId) {
-    fetch(`http://localhost:8000/api/users/${userId}/follow`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Erro ao seguir usuário");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const botaoSeguir = document.querySelector(".botao-seguir");
-        if (botaoSeguir) {
-          botaoSeguir.querySelector(".seguir").textContent = "deixar de seguir";
-        }
-      })
-      .catch((error) => {
-        console.error("Erro:", error);
-        alert(
-          "Não foi possível seguir este usuário. Tente novamente mais tarde."
-        );
-      });
-  }
-
-  // Função para deixar de seguir um usuário
-  function deixarDeSeguirUsuario(userId) {
-    fetch(`http://localhost:8000/api/users/${userId}/unfollow`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Erro ao deixar de seguir usuário");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const botaoSeguir = document.querySelector(".botao-seguir");
-        if (botaoSeguir) {
-          botaoSeguir.querySelector(".seguir").textContent = "seguir";
-        }
-      })
-      .catch((error) => {
-        console.error("Erro:", error);
-        alert(
-          "Não foi possível deixar de seguir este usuário. Tente novamente mais tarde."
         );
       });
   }
