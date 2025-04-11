@@ -4,236 +4,44 @@
     <meta charset="utf-8" />
     <title>Twitter Clone - Publicações</title>
     <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f5f8fa;
-      }
-      .topo-publicacoes {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        display: flex;
-        flex-wrap: wrap;
-      }
-      .w-clearfix:after {
-        content: "";
-        display: table;
-        clear: both;
-      }
-      .div-perfil {
-        width: 300px;
-        padding: 20px;
-        background-color: white;
-        border-radius: 5px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        margin-right: 20px;
-        margin-bottom: 20px;
-      }
-      .nome-perfil {
-        font-size: 18px;
-        font-weight: bold;
-        margin-top: 0;
-      }
-      .botao-seguir {
-        display: inline-block;
-        background-color: #1da1f2;
-        border-radius: 20px;
-        padding: 8px 16px;
-        text-decoration: none;
-        margin-bottom: 10px;
-        cursor: pointer;
-      }
-      .seguir {
-        color: white;
-        margin: 0;
-        font-size: 14px;
-      }
-      .botao-logout {
-        display: block;
-        background-color: #f44336;
-        border-radius: 20px;
-        padding: 8px 16px;
-        text-decoration: none;
-        margin-top: 10px;
-        text-align: center;
-        cursor: pointer;
-      }
-      .logout {
-        color: white;
-        margin: 0;
-        font-size: 14px;
-      }
-      .div-feed {
-        flex: 1;
-        min-width: 300px;
-      }
-      .container-publicacoes {
-        background-color: white;
-        border-radius: 5px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-      }
-      .bloco-publicacao {
-        margin-bottom: 20px;
-        border-bottom: 1px solid #e1e8ed;
-        padding-bottom: 20px;
-      }
-      .texto-publicar {
-        width: 100%;
-        border: 1px solid #e1e8ed;
-        border-radius: 5px;
-        padding: 15px;
-        min-height: 80px;
-        resize: vertical;
-        margin-bottom: 10px;
-      }
-      .botao-publicar {
-        background-color: #1da1f2;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-      }
-      .feed {
-        font-size: 18px;
-        font-weight: bold;
-        color: #1da1f2;
-        margin-top: 20px;
-        margin-bottom: 20px;
-      }
-      .div-publicacao-feed {
-        padding: 15px;
-        border-bottom: 1px solid #e1e8ed;
-        margin-bottom: 20px;
-        cursor: pointer;
-      }
-      .div-publicacao-feed:hover {
-        background-color: #f5f8fa;
-      }
-      .nome-autor {
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #14171a;
-      }
-      .texto-publicacao {
-        margin-top: 5px;
-        margin-bottom: 15px;
-        line-height: 1.4;
-      }
-      .div-comentario-existente {
-        margin-left: 20px;
-        margin-top: 10px;
-        background-color: #f5f8fa;
-        padding: 10px;
-        border-radius: 5px;
-      }
-      .nome-perfil-comentario {
-        font-weight: bold;
-        font-size: 14px;
-        margin-bottom: 5px;
-        margin-top: 0;
-      }
-      .comentario {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 14px;
-        line-height: 1.4;
-      }
-      .textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #e1e8ed;
-        border-radius: 5px;
-        resize: vertical;
-        min-height: 60px;
-        margin-bottom: 10px;
-      }
-      .submit-button {
-        background-color: #1da1f2;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 15px;
-        cursor: pointer;
-        font-size: 12px;
-        float: right;
-      }
-      .comentario-item {
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #e1e8ed;
-      }
-      .carregando-feed {
-        text-align: center;
-        padding: 20px;
-        color: #999;
-      }
-      .sem-tweets {
-        text-align: center;
-        padding: 20px;
-        color: #999;
-      }
-      .mensagem-sucesso {
-        color: green;
-        margin-top: 5px;
-        display: none;
-      }
-      .mensagem-erro {
-        color: red;
-        margin-top: 5px;
-        display: none;
-      }
-      .perfil-selecionado {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #e1e8ed;
-      }
-      .perfil-selecionado-titulo {
-        font-size: 16px;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .perfil-selecionado-nome {
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-      .perfil-selecionado-stats {
-        display: flex;
-        gap: 15px;
-        margin: 10px 0;
-      }
-      .perfil-selecionado-stat {
-        font-size: 14px;
-        color: #657786;
-      }
-      .perfil-selecionado-stat strong {
-        color: #14171a;
-      }
-      @media (max-width: 767px) {
-        .div-perfil {
-          width: 100%;
-          margin-right: 0;
-        }
-      }
-    </style>
+
+    <!-- Link para o arquivo CSS externo -->
+    <link rel="stylesheet" href="./css/styles.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
+
   <body>
     <div class="topo-publicacoes w-clearfix">
       <div class="div-perfil">
         <!-- Seu perfil -->
         <p class="nome-perfil">Carregando...</p>
-        
+
+        <!-- Estatísticas do usuário logado -->
+        <div class="perfil-usuario-stats">
+          <div class="perfil-usuario-stat">
+            <strong id="usuario-seguidores-count">0</strong> seguidores
+          </div>
+          <div class="perfil-usuario-stat">
+            <strong id="usuario-seguindo-count">0</strong> seguindo
+          </div>
+        </div>
+
         <!-- Perfil do usuário selecionado -->
-        <div id="perfil-selecionado" class="perfil-selecionado" style="display: none;">
+        <div
+          id="perfil-selecionado"
+          class="perfil-selecionado"
+          style="display: none"
+        >
           <p class="perfil-selecionado-titulo">Perfil Selecionado</p>
           <p class="perfil-selecionado-nome" id="perfil-selecionado-nome"></p>
-          
+
           <div class="perfil-selecionado-stats">
             <div class="perfil-selecionado-stat">
               <strong id="seguidores-count">0</strong> seguidores
@@ -242,17 +50,17 @@
               <strong id="seguindo-count">0</strong> seguindo
             </div>
           </div>
-          
+
           <a href="#" id="botao-seguir-usuario" class="botao-seguir">
             <p class="seguir">seguir</p>
           </a>
         </div>
-        
+
         <a href="#" id="botao-logout" class="botao-logout">
           <p class="logout">sair</p>
         </a>
       </div>
-      
+
       <div class="div-feed">
         <div class="container-publicacoes">
           <div class="bloco-publicacao">
@@ -283,7 +91,7 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
+      document.addEventListener("DOMContentLoaded", function () {
         // Verificar se o usuário está logado
         const token = localStorage.getItem("auth_token");
         const userId = localStorage.getItem("user_id");
@@ -303,16 +111,20 @@
           nomePerfil.textContent = userName || "Usuário";
         }
 
+        // Carregar estatísticas do usuário logado
+        carregarEstatisticasUsuarioLogado();
+
         // Carregar feed de tweets
         carregarFeed();
 
         // Formulário para publicar novo tweet
         const formPublicar = document.getElementById("form-publicar");
         if (formPublicar) {
-          formPublicar.addEventListener("submit", function(event) {
+          formPublicar.addEventListener("submit", function (event) {
             event.preventDefault();
 
-            const textoPublicacao = document.getElementById("texto-publicacao").value;
+            const textoPublicacao =
+              document.getElementById("texto-publicacao").value;
 
             if (!textoPublicacao.trim()) {
               alert("Por favor, escreva algo para publicar.");
@@ -326,7 +138,7 @@
         // Botão para fazer logout
         const botaoLogout = document.getElementById("botao-logout");
         if (botaoLogout) {
-          botaoLogout.addEventListener("click", function(event) {
+          botaoLogout.addEventListener("click", function (event) {
             event.preventDefault();
 
             fetch("http://localhost:8000/api/logout", {
@@ -357,6 +169,81 @@
           });
         }
 
+        // Função para carregar estatísticas do usuário logado
+        function carregarEstatisticasUsuarioLogado() {
+          if (!userId) {
+            return;
+          }
+
+          // Carregar número de seguidores do usuário logado
+          fetch(`http://localhost:8000/api/users/${userId}/followers`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(
+                  "Erro ao carregar seguidores: " + response.status
+                );
+              }
+              return response.json();
+            })
+            .then((data) => {
+              // Verificar estrutura dos dados
+              const seguidores = Array.isArray(data) ? data : data.data || [];
+
+              // Atualizar contador de seguidores
+              const seguidoresCount = document.getElementById(
+                "usuario-seguidores-count"
+              );
+              if (seguidoresCount) {
+                seguidoresCount.textContent = seguidores.length;
+              }
+            })
+            .catch((error) => {
+              console.error(
+                "Erro ao carregar seguidores do usuário logado:",
+                error
+              );
+            });
+
+          // Carregar número de perfis que o usuário logado segue
+          fetch(`http://localhost:8000/api/users/${userId}/following`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(
+                  "Erro ao carregar seguindo: " + response.status
+                );
+              }
+              return response.json();
+            })
+            .then((data) => {
+              // Verificar estrutura dos dados
+              const seguindo = Array.isArray(data) ? data : data.data || [];
+
+              // Atualizar contador de seguindo
+              const seguindoCount = document.getElementById(
+                "usuario-seguindo-count"
+              );
+              if (seguindoCount) {
+                seguindoCount.textContent = seguindo.length;
+              }
+            })
+            .catch((error) => {
+              console.error(
+                "Erro ao carregar seguindo do usuário logado:",
+                error
+              );
+            });
+        }
+
         // Função para carregar informações de um usuário específico
         function carregarInformacoesUsuario(usuarioId) {
           // Primeiro, carregamos os dados básicos do usuário
@@ -368,19 +255,25 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao carregar dados do usuário: " + response.status);
+                throw new Error(
+                  "Erro ao carregar dados do usuário: " + response.status
+                );
               }
               return response.json();
             })
             .then((usuario) => {
               // Atualizar nome do perfil selecionado
-              const perfilNome = document.getElementById("perfil-selecionado-nome");
+              const perfilNome = document.getElementById(
+                "perfil-selecionado-nome"
+              );
               if (perfilNome) {
                 perfilNome.textContent = usuario.name;
               }
 
-              // Configurar botão de seguir
-              const botaoSeguirUsuario = document.getElementById("botao-seguir-usuario");
+              // Configurar botão de seguir - Garantindo que o ID do usuário seja corretamente armazenado
+              const botaoSeguirUsuario = document.getElementById(
+                "botao-seguir-usuario"
+              );
               if (botaoSeguirUsuario) {
                 botaoSeguirUsuario.setAttribute("data-user-id", usuario.id);
               }
@@ -390,12 +283,13 @@
 
               // Agora carregamos o número de seguidores
               carregarSeguidores(usuario.id);
-              
+
               // E também o número de perfis que o usuário segue
               carregarSeguindo(usuario.id);
 
               // Mostrar a seção do perfil selecionado
-              document.getElementById("perfil-selecionado").style.display = "block";
+              document.getElementById("perfil-selecionado").style.display =
+                "block";
             })
             .catch((error) => {
               console.error("Erro ao carregar informações do usuário:", error);
@@ -412,16 +306,19 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao carregar seguidores: " + response.status);
+                throw new Error(
+                  "Erro ao carregar seguidores: " + response.status
+                );
               }
               return response.json();
             })
             .then((data) => {
               // Verificar estrutura dos dados
               const seguidores = Array.isArray(data) ? data : data.data || [];
-              
+
               // Atualizar contador de seguidores
-              const seguidoresCount = document.getElementById("seguidores-count");
+              const seguidoresCount =
+                document.getElementById("seguidores-count");
               if (seguidoresCount) {
                 seguidoresCount.textContent = seguidores.length;
               }
@@ -441,14 +338,16 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao carregar seguindo: " + response.status);
+                throw new Error(
+                  "Erro ao carregar seguindo: " + response.status
+                );
               }
               return response.json();
             })
             .then((data) => {
               // Verificar estrutura dos dados
               const seguindo = Array.isArray(data) ? data : data.data || [];
-              
+
               // Atualizar contador de seguindo
               const seguindoCount = document.getElementById("seguindo-count");
               if (seguindoCount) {
@@ -470,7 +369,9 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao verificar seguimento: " + response.status);
+                throw new Error(
+                  "Erro ao verificar seguimento: " + response.status
+                );
               }
               return response.json();
             })
@@ -484,32 +385,36 @@
               );
 
               // Atualizar texto do botão
-              const botaoSeguirUsuario = document.getElementById("botao-seguir-usuario");
+              const botaoSeguirUsuario = document.getElementById(
+                "botao-seguir-usuario"
+              );
               if (botaoSeguirUsuario) {
-                botaoSeguirUsuario.querySelector(".seguir").textContent = jaSeguindo
-                  ? "deixar de seguir"
-                  : "seguir";
+                botaoSeguirUsuario.querySelector(".seguir").textContent =
+                  jaSeguindo ? "deixar de seguir" : "seguir";
               }
-            })
-            .catch((error) => {
-              console.error("Erro ao verificar seguimento:", error);
             });
+          alert("Seguir").catch((error) => {
+            console.error("Erro ao verificar seguimento:", error);
+          });
         }
 
         // Evento para o botão seguir/deixar de seguir do perfil selecionado
-        const botaoSeguirUsuario = document.getElementById("botao-seguir-usuario");
+        const botaoSeguirUsuario = document.getElementById(
+          "botao-seguir-usuario"
+        );
         if (botaoSeguirUsuario) {
-          botaoSeguirUsuario.addEventListener("click", function(event) {
+          botaoSeguirUsuario.addEventListener("click", function (event) {
             event.preventDefault();
-            
+
             const usuarioId = this.getAttribute("data-user-id");
             if (!usuarioId) {
               alert("Usuário não identificado");
               return;
             }
 
-            const estaSeguindo = this.querySelector(".seguir").textContent === "deixar de seguir";
-            
+            const estaSeguindo =
+              this.querySelector(".seguir").textContent === "deixar de seguir";
+
             if (estaSeguindo) {
               deixarDeSeguirUsuario(usuarioId);
             } else {
@@ -594,6 +499,9 @@
 
               // Recarregar feed para mostrar o novo tweet
               carregarFeed();
+
+              // Atualizar estatísticas do usuário logado após publicação
+              carregarEstatisticasUsuarioLogado();
             })
             .catch((error) => {
               console.error("Erro:", error);
@@ -624,6 +532,9 @@
             nomeAutor.className = "nome-autor";
             nomeAutor.textContent = tweet.user.name;
 
+            // Adicionamos o ID do usuário como atributo no nome do autor
+            nomeAutor.setAttribute("data-user-id", tweet.user.id);
+
             // Conteúdo do tweet
             const textoTweet = document.createElement("p");
             textoTweet.className = "texto-publicacao";
@@ -633,16 +544,23 @@
             divTweet.appendChild(nomeAutor);
             divTweet.appendChild(textoTweet);
 
-            // Adicionar evento de clique ao tweet para mostrar perfil do autor
-            divTweet.addEventListener("click", function(event) {
-              // Evitar que o clique propague para os elementos filhos
-              if (event.target.closest(".div-comentario-existente")) {
-                return;
-              }
-              
+            // Melhorando o tratamento de clique para capturar corretamente o ID do usuário
+            nomeAutor.addEventListener("click", function (event) {
+              event.stopPropagation(); // Impedir propagação
               const autorId = this.getAttribute("data-user-id");
               if (autorId) {
                 carregarInformacoesUsuario(autorId);
+              }
+            });
+
+            // Também permitir clicar no tweet para ver o perfil do autor
+            divTweet.addEventListener("click", function (event) {
+              // Verificar se o clique não foi em um elemento filho que tem seu próprio tratador
+              if (event.target === this || event.target === textoTweet) {
+                const autorId = this.getAttribute("data-user-id");
+                if (autorId) {
+                  carregarInformacoesUsuario(autorId);
+                }
               }
             });
 
@@ -659,16 +577,16 @@
             const formComentario = document.createElement("div");
             formComentario.className = "w-form";
             formComentario.innerHTML = `
-              <form id="form-comentario-${tweet.id}" class="w-clearfix">
-                <textarea placeholder="..." maxlength="5000" id="texto-comentario-${tweet.id}" class="textarea w-input"></textarea>
-                <input type="submit" value="Comentar" data-wait="Aguarde..." class="submit-button w-button">
-              </form>
-            `;
+      <form id="form-comentario-${tweet.id}" class="w-clearfix">
+        <textarea placeholder="..." maxlength="5000" id="texto-comentario-${tweet.id}" class="textarea w-input"></textarea>
+        <input type="submit" value="Comentar" data-wait="Aguarde..." class="submit-button w-button">
+      </form>
+    `;
 
             // Adicionar event listener para o formulário de comentário
             formComentario
               .querySelector(`#form-comentario-${tweet.id}`)
-              .addEventListener("submit", function(event) {
+              .addEventListener("submit", function (event) {
                 event.preventDefault();
                 event.stopPropagation(); // Impedir que o clique chegue ao tweet
 
@@ -714,7 +632,7 @@
             });
         }
 
-        // Função para exibir comentários de um tweet
+        // Função para exibir comentários de um tweet com atributos de ID
         function exibirComentarios(comentarios, container) {
           // Remover formulário temporariamente
           const formComentario = container.querySelector(".w-form");
@@ -739,15 +657,33 @@
             nomeComentario.className = "nome-perfil-comentario";
             nomeComentario.textContent = comentario.user?.name || "Usuário";
 
+            // Adicionar o ID do usuário como atributo de dados
+            if (comentario.user && comentario.user.id) {
+              nomeComentario.setAttribute("data-user-id", comentario.user.id);
+
+              // Adicionar evento de clique para carregar o perfil do autor do comentário
+              nomeComentario.addEventListener("click", function (event) {
+                event.stopPropagation();
+                const autorId = this.getAttribute("data-user-id");
+                if (autorId) {
+                  carregarInformacoesUsuario(autorId);
+                }
+              });
+            }
+
             const textoComentario = document.createElement("p");
             textoComentario.className = "comentario";
-            textoComentario.textContent = comentario.content || comentario.text || comentario.body || "Sem conteúdo";
+            textoComentario.textContent =
+              comentario.content ||
+              comentario.text ||
+              comentario.body ||
+              "Sem conteúdo";
 
             divComentario.appendChild(nomeComentario);
             divComentario.appendChild(textoComentario);
 
             // Adicionar evento para impedir que clique no comentário propague para o tweet
-            divComentario.addEventListener("click", function(event) {
+            divComentario.addEventListener("click", function (event) {
               event.stopPropagation();
             });
 
@@ -759,7 +695,6 @@
             container.appendChild(formComentario);
           }
         }
-
         // Função para comentar em um tweet
         function comentarTweet(tweetId, conteudo, container) {
           fetch(`http://localhost:8000/api/tweets/${tweetId}/comments`, {
@@ -785,6 +720,9 @@
 
               // Recarregar comentários
               carregarComentarios(tweetId, container);
+
+              // Atualizar estatísticas do usuário logado após comentar
+              carregarEstatisticasUsuarioLogado();
             })
             .catch((error) => {
               console.error("Erro:", error);
@@ -813,11 +751,14 @@
             .then((data) => {
               // Atualiza o estado do botão
               verificarSeguimento(usuarioId);
-              
-              // Recarregar os contadores
+
+              // Recarregar os contadores do perfil selecionado
               carregarSeguidores(usuarioId);
               carregarSeguindo(usuarioId);
-              
+
+              // Atualizar estatísticas do usuário logado
+              carregarEstatisticasUsuarioLogado();
+
               // Atualiza o feed para possíveis atualizações
               carregarFeed();
             })
@@ -841,18 +782,23 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao deixar de seguir usuário: " + response.status);
+                throw new Error(
+                  "Erro ao deixar de seguir usuário: " + response.status
+                );
               }
               return response.json();
             })
             .then((data) => {
               // Atualiza o estado do botão
               verificarSeguimento(usuarioId);
-              
-              // Recarregar os contadores
+
+              // Recarregar os contadores do perfil selecionado
               carregarSeguidores(usuarioId);
               carregarSeguindo(usuarioId);
-              
+
+              // Atualizar estatísticas do usuário logado
+              carregarEstatisticasUsuarioLogado();
+
               // Atualiza o feed para possíveis atualizações
               carregarFeed();
             })

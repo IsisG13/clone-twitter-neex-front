@@ -158,88 +158,102 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  // Função para exibir os tweets no feed
-  function exibirTweets(tweets) {
-    const containerFeed = document.getElementById("container-feed");
-    if (!containerFeed) return;
+// Função para exibir os tweets no feed
+function exibirTweets(tweets) {
+  const containerFeed = document.getElementById("container-feed");
+  if (!containerFeed) return;
 
-    // Limpar conteúdo atual
-    containerFeed.innerHTML = "";
+  // Limpar conteúdo atual
+  containerFeed.innerHTML = "";
 
-    // Criar elemento para cada tweet
-    tweets.forEach((tweet) => {
-      const divTweet = document.createElement("div");
-      divTweet.className = "div-publicacao-feed";
-      divTweet.setAttribute("data-user-id", tweet.user.id);
+  // Criar elemento para cada tweet
+  tweets.forEach((tweet) => {
+    const divTweet = document.createElement("div");
+    divTweet.className = "div-publicacao-feed";
+    divTweet.setAttribute("data-user-id", tweet.user.id);
 
-      // Nome do autor
-      const nomeAutor = document.createElement("p");
-      nomeAutor.className = "nome-autor";
-      nomeAutor.textContent = tweet.user.name;
+    // Nome do autor
+    const nomeAutor = document.createElement("p");
+    nomeAutor.className = "nome-autor";
+    nomeAutor.textContent = tweet.user.name;
+    
+    // Adicionamos o ID do usuário como atributo no nome do autor
+    nomeAutor.setAttribute("data-user-id", tweet.user.id);
 
-      // Conteúdo do tweet
-      const textoTweet = document.createElement("p");
-      textoTweet.className = "texto-publicacao";
-      textoTweet.textContent = tweet.content;
+    // Conteúdo do tweet
+    const textoTweet = document.createElement("p");
+    textoTweet.className = "texto-publicacao";
+    textoTweet.textContent = tweet.content;
 
-      // Adicionar evento de clique ao tweet para mostrar o perfil do usuário
-      divTweet.addEventListener("click", function(event) {
-        // Prevenir a propagação do clique para não interferir com os comentários
-        if (event.target === divTweet || 
-            event.target === nomeAutor || 
-            event.target === textoTweet) {
-          carregarPerfilUsuario(tweet.user.id);
+    // Adicionar elementos ao tweet
+    divTweet.appendChild(nomeAutor);
+    divTweet.appendChild(textoTweet);
+
+    // Melhorando o tratamento de clique para capturar corretamente o ID do usuário
+    nomeAutor.addEventListener("click", function(event) {
+      event.stopPropagation(); // Impedir propagação
+      const autorId = this.getAttribute("data-user-id");
+      if (autorId) {
+        carregarInformacoesUsuario(autorId);
+      }
+    });
+    
+    // Também permitir clicar no tweet para ver o perfil do autor
+    divTweet.addEventListener("click", function(event) {
+      // Verificar se o clique não foi em um elemento filho que tem seu próprio tratador
+      if (event.target === this || event.target === textoTweet) {
+        const autorId = this.getAttribute("data-user-id");
+        if (autorId) {
+          carregarInformacoesUsuario(autorId);
         }
+      }
+    });
+
+    // Container para comentários
+    const divComentarios = document.createElement("div");
+    divComentarios.className = "div-comentario-existente";
+
+    // Carregar e exibir comentários (se necessário)
+    if (tweet.comments && tweet.comments.length > 0) {
+      exibirComentarios(tweet.comments, divComentarios);
+    }
+
+    // Formulário para adicionar comentário
+    const formComentario = document.createElement("div");
+    formComentario.className = "w-form";
+    formComentario.innerHTML = `
+      <form id="form-comentario-${tweet.id}" class="w-clearfix">
+        <textarea placeholder="..." maxlength="5000" id="texto-comentario-${tweet.id}" class="textarea w-input"></textarea>
+        <input type="submit" value="Comentar" data-wait="Aguarde..." class="submit-button w-button">
+      </form>
+    `;
+
+    // Adicionar event listener para o formulário de comentário
+    formComentario
+      .querySelector(`#form-comentario-${tweet.id}`)
+      .addEventListener("submit", function(event) {
+        event.preventDefault();
+        event.stopPropagation(); // Impedir que o clique chegue ao tweet
+
+        const textoComentario = document.getElementById(
+          `texto-comentario-${tweet.id}`
+        ).value;
+
+        if (!textoComentario.trim()) {
+          alert("Por favor, escreva algo para comentar.");
+          return;
+        }
+
+        comentarTweet(tweet.id, textoComentario, divComentarios);
       });
 
-      // Container para comentários
-      const divComentarios = document.createElement("div");
-      divComentarios.className = "div-comentario-existente";
+    divComentarios.appendChild(formComentario);
+    divTweet.appendChild(divComentarios);
 
-      // Adicionar elementos ao tweet
-      divTweet.appendChild(nomeAutor);
-      divTweet.appendChild(textoTweet);
-
-      // Carregar e exibir comentários (se necessário)
-      if (tweet.comments && tweet.comments.length > 0) {
-        exibirComentarios(tweet.comments, divComentarios);
-      }
-
-      // Formulário para adicionar comentário
-      const formComentario = document.createElement("div");
-      formComentario.className = "w-form";
-      formComentario.innerHTML = `
-        <form id="form-comentario-${tweet.id}" class="w-clearfix">
-          <textarea placeholder="..." maxlength="5000" id="texto-comentario-${tweet.id}" class="textarea w-input"></textarea>
-          <input type="submit" value="Comentar" data-wait="Aguarde..." class="submit-button w-button">
-        </form>
-      `;
-
-      // Adicionar event listener para o formulário de comentário
-      formComentario
-        .querySelector(`#form-comentario-${tweet.id}`)
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-
-          const textoComentario = document.getElementById(
-            `texto-comentario-${tweet.id}`
-          ).value;
-
-          if (!textoComentario.trim()) {
-            alert("Por favor, escreva algo para comentar.");
-            return;
-          }
-
-          comentarTweet(tweet.id, textoComentario, divComentarios);
-        });
-
-      divComentarios.appendChild(formComentario);
-      divTweet.appendChild(divComentarios);
-
-      // Adicionar tweet ao container
-      containerFeed.appendChild(divTweet);
-    });
-  }
+    // Adicionar tweet ao container
+    containerFeed.appendChild(divTweet);
+  });
+}
 
   // Função para carregar o perfil de um usuário
   function carregarPerfilUsuario(usuarioId) {
@@ -390,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Usuário não identificado");
         return;
       }
-
+  
       const estaSeguindo = this.querySelector(".seguir").textContent === "deixar de seguir";
       
       if (estaSeguindo) {
@@ -403,6 +417,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Função para seguir um usuário
   function seguirUsuario(usuarioId) {
+    alert('Seguir');
     fetch(`http://localhost:8000/api/users/${usuarioId}/follow`, {
       method: "POST",
       headers: {
