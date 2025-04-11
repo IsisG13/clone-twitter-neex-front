@@ -169,6 +169,34 @@
           });
         }
 
+        // Função para mostrar notificação
+        function mostrarNotificacao(mensagem, tipo = "sucesso") {
+          // Remove notificações anteriores
+          const notificacaoAnterior = document.querySelector(".notificacao");
+          if (notificacaoAnterior) {
+            notificacaoAnterior.remove();
+          }
+
+          // Cria nova notificação
+          const notificacao = document.createElement("div");
+          notificacao.className = `notificacao ${tipo}`;
+          notificacao.textContent = mensagem;
+          document.body.appendChild(notificacao);
+
+          // Mostra a notificação
+          setTimeout(() => {
+            notificacao.classList.add("mostrar");
+          }, 10);
+
+          // Esconde após 3 segundos
+          setTimeout(() => {
+            notificacao.classList.remove("mostrar");
+            setTimeout(() => {
+              notificacao.remove();
+            }, 300);
+          }, 3000);
+        }
+
         // Função para carregar estatísticas do usuário logado
         function carregarEstatisticasUsuarioLogado() {
           if (!userId) {
@@ -394,7 +422,7 @@
               console.error("Erro ao verificar seguimento:", error);
             });
         }
-        
+
         // Evento para o botão seguir/deixar de seguir
         document
           .getElementById("botao-seguir-usuario")
@@ -772,20 +800,23 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao seguir usuário");
+                return response.json().then((err) => {
+                  throw err;
+                });
               }
               return response.json();
             })
-            .then(() => {
-              // Atualizar o estado do botão
+            .then((data) => {
+              mostrarNotificacao("Começou a seguir", "sucesso");
               verificarSeguimento(usuarioId);
-              // Atualizar contadores
               carregarSeguidores(usuarioId);
               carregarEstatisticasUsuarioLogado();
             })
             .catch((error) => {
-              console.error("Erro:", error);
-              alert("Não foi possível seguir este usuário");
+              const mensagem =
+                error.message ||
+                "Você já segue este usuário ou está tentando seguir a si mesmo";
+              mostrarNotificacao(mensagem, "erro");
             });
         }
 
@@ -801,20 +832,23 @@
           })
             .then((response) => {
               if (!response.ok) {
-                throw new Error("Erro ao deixar de seguir");
+                return response.json().then((err) => {
+                  throw err;
+                });
               }
               return response.json();
             })
-            .then(() => {
-              // Atualizar o estado do botão
+            .then((data) => {
+              mostrarNotificacao("Deixou de seguir", "sucesso");
               verificarSeguimento(usuarioId);
-              // Atualizar contadores
               carregarSeguidores(usuarioId);
               carregarEstatisticasUsuarioLogado();
             })
             .catch((error) => {
-              console.error("Erro:", error);
-              alert("Não foi possível deixar de seguir");
+              mostrarNotificacao(
+                error.message || "Erro ao deixar de seguir",
+                "erro"
+              );
             });
         }
       });
